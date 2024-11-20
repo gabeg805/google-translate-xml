@@ -187,3 +187,4 @@ with open(OUTPUT_FILE, "w") as writeStream:
 			# Write the translation to the file
 			writeStream.write(line.replace(f">{match[0]}<", f">{translation}<"))
 
+
