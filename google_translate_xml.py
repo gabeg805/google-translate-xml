@@ -10,7 +10,12 @@
 #     
 #     This has been primarily tested on XML files that are used in developing
 #     an Android app (arrays.xml, strings.xml, etc.)
-#     to Prusa Connect.
+#     
+#     Note: This translation is slow (~1 translation / sec) due to just
+#           focusing on keeping the logic straightforward, and to that end, it
+#           allows for preserving the format of the original file, which was
+#           one of the primary interests outside of being able to translate a
+#           file.
 #     
 # PREREQUISITES
 #     1. Create a Google Cloud account. (This is free)
