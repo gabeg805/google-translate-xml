@@ -25,9 +25,11 @@ Use Google's Translation API to translate an XML file.
 
 6. Install the Google Cloud Translation API in a virtual environment.
 
-   `python3 -m venv <YOUR-ENV>
+   ```
+   python3 -m venv <YOUR-ENV>
    source <YOUR-ENV>/bin/activate
-   pip install google-cloud-translate`
+   pip install google-cloud-translate
+   ```
 
    Where **<YOUR-ENV>** is a name of your choosing.
 
