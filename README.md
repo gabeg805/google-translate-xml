@@ -31,7 +31,7 @@ Use Google's Translation API to translate an XML file.
    pip install google-cloud-translate
    ```
 
-   Where **<YOUR-ENV>** is a name of your choosing.
+   Where **\<YOUR-ENV\>** is a name of your choosing.
 
 7. Initialize the Google Cloud CLI:
 
@@ -59,7 +59,7 @@ ID so that you do not have to keep using the `-p` flag.
 
 `export GOOGLE_CLOUD_PROJECT=<PROJECT_ID>`
 
-Where **<PROJECT_ID>** is your project ID. Then run the script without the -p
+Where **<PROJECT_ID>** is your project ID. Then run the script **without** the -p
 flag.
 
 `python3 google_translate_xml.py -f strings.xml -l de`
