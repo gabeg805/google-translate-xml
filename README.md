@@ -18,18 +18,18 @@ Use Google's Translation API to translate an XML file.
 
    `https://cloud.google.com/sdk/docs/install`
 
-5. Source the Google Cloud environment, or logout and log back in to have your
-   shell source it for you:
+5. Source the Google Cloud environment, or logout and log back into your
+   machine to have your shell source it for you:
 
    `. /etc/profile.d/google-cloud-cli.sh`
 
 6. Install the Google Cloud Translation API in a virtual environment.
 
-   `python3 -m venv <YOUR-ENV>`
-   `source <YOUR-ENV>/bin/activate`
-   `pip install google-cloud-translate`
+   `python3 -m venv <YOUR-ENV>
+   source <YOUR-ENV>/bin/activate
+   pip install google-cloud-translate`
 
-   Where `<YOUR-ENV>` is a name of your choosing.
+   Where **<YOUR-ENV>** is a name of your choosing.
 
 7. Initialize the Google Cloud CLI:
 
@@ -47,7 +47,7 @@ Use Google's Translation API to translate an XML file.
 
 `python3 google_translate_xml.py -f strings.xml -l de -p <PROJECT_ID>`
 
-Where `<PROJECT_ID>` is your project ID. This can be found in your Google Cloud
+Where **<PROJECT_ID>** is your project ID. This can be found in your Google Cloud
 Console.
 
 ## Translate from English to German without Specifying Project ID
@@ -57,9 +57,8 @@ ID so that you do not have to keep using the `-p` flag.
 
 `export GOOGLE_CLOUD_PROJECT=<PROJECT_ID>`
 
-Where `<PROJECT_ID>` is your project ID.
-
-Then run the script without the -p flag.
+Where **<PROJECT_ID>** is your project ID. Then run the script without the -p
+flag.
 
 `python3 google_translate_xml.py -f strings.xml -l de`
 
