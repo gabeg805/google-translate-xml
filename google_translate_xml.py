@@ -8,66 +8,14 @@
 # DESCRIPTION
 #     Use Google's Translation API to translate an XML file.
 #     
-#     This has been primarily tested on XML files that are used in developing
-#     an Android app (arrays.xml, strings.xml, etc.)
+#     This has been primarily tested on XML files that are used in Android
+#     development (arrays.xml, strings.xml, etc.)
 #     
 #     Note: This translation is slow (~1 translation / sec) due to just
 #           focusing on keeping the logic straightforward, and to that end, it
 #           allows for preserving the format of the original file, which was
 #           one of the primary interests outside of being able to translate a
 #           file.
-#     
-# PREREQUISITES
-#     1. Create a Google Cloud account. (This is free)
-#     
-#     2. Create a project in your account. Note the "Project ID", you will need
-#        this later.
-#     
-#     3. Enable the Translation API. If you do not do this now, it is OK. Just
-#        know that you will get an error when you try to run the script saying
-#        something about how the API may not be enabled yet, and there will be
-#        a link directing you to enable it. You can put this off if you just
-#        want to wait for that error to get the link.
-#     
-#     4. Install the Google Cloud CLI. You may also need the Google Cloud SDK.
-#        You can just run the code after you install the Google Cloud CLI, but
-#        ultimately you need the "gcloud" command in order to authenticate your
-#        queries.
-#     
-#            https://cloud.google.com/sdk/docs/install
-#     
-#     5. Install the Google Cloud Translation API. Do this in a virtual
-#        environment.
-#     
-#            python3 -m venv <your-env>
-#            source <your-env>/bin/activate
-#            pip install google-cloud-translate
-#     
-#     5. Initialize the Google Cloud CLI by running the following:
-#     
-#            gcloud init
-#     
-#     6. Create local authentication credentials for your user account by
-#        running the following:
-#     
-#            gcloud auth application-default login
-#     
-#     7. Try to run this script.
-# 
-# EXAMPLES
-#     Translate from English to German.
-#     
-#         python3 google_translate_xml.py -f strings.xml -l de -p <PROJECT_ID>
-# 
-#     Translate from English to German, with your Project ID part of the
-#     GOOGLE_CLOUD_PROJECT environment variable.
-#     
-#         python3 google_translate_xml.py -f strings.xml -l de
-# 
-# NOTES
-#     The list of available languages to translate to can be found here:
-#     
-#         https://cloud.google.com/translate/docs/languages#neural_machine_translation_model
 # 
 
 import argparse
@@ -82,7 +30,9 @@ parser = argparse.ArgumentParser(
 	description="Parse an XML file, such as strings.xml for an Android app, and translate each item in the file.  This uses the Google Translation API so you need to have an API key to use this script.  The process can be a little slow because it queries each item line by line, but you can see the output and catch any potential failures, and the structure of your original file is copied in the output file.")
 
 # Add arguments to the parser
-parser.add_argument("-f", "--file", required=True, help="The XML file to translate.")
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument("-f", "--file", help="The XML file to translate.")
+group.add_argument("-t", "--text", help="The text to translate.")
 parser.add_argument("-l", "--language", required=True, help="The ISO 639-1 code of the language to translate the file to. See header of script for where to find full list of available languages.")
 parser.add_argument("-o", "--output", help="The output file where the translation will be written to.")
 parser.add_argument("-p", "--project", help="The Google Cloud Project ID")
@@ -92,13 +42,19 @@ args = parser.parse_args()
 
 # Define globals
 XML_FILE = args.file
+TEXT = args.text
 LANGUAGE = args.language
 OUTPUT_FILE = args.output if args.output else f"{XML_FILE}-{LANGUAGE}"
 PROJECT_ID = args.project if args.project else os.environ.get("GOOGLE_CLOUD_PROJECT")
 
 # Check if file exists
-if not os.path.isfile(XML_FILE):
+if XML_FILE is not None and not os.path.isfile(XML_FILE):
 	print(f"Error: XML file was not found '{XML_FILE}'")
+	exit(1)
+
+# Check if text is not empty
+if TEXT is not None and not TEXT:
+	print(f"Error: Text was not found '{TEXT}'")
 	exit(1)
 
 # Check the project ID
@@ -145,51 +101,66 @@ def translate_text(
 	else:
 		return ""
 
-# Write to other file
-with open(OUTPUT_FILE, "w") as writeStream: 
+# Translate file
+if XML_FILE:
 
-	# Reading file
-	with open(XML_FILE, "r") as readStream:
+	# Write to other file
+	with open(OUTPUT_FILE, "w") as writeStream:
 
-		# Iterate over each line in the file
-		for i,line in enumerate(readStream):
+		# Reading file
+		with open(XML_FILE, "r") as readStream:
 
-			# Strip whitespace from line
-			stripline = line.strip()
+			# Iterate over each line in the file
+			for i,line in enumerate(readStream):
 
-			# String
-			if stripline.startswith("<string "):
-				match = re.findall(r"<string.*?>(.*?)</string>", stripline, re.DOTALL)
+				# Strip whitespace from line
+				stripline = line.strip()
 
-			# Item
-			elif stripline.startswith("<item"):
-				match = re.findall(r"<item.*?>(.*?)</item>", stripline, re.DOTALL)
+				# String
+				if stripline.startswith("<string "):
+					match = re.findall(r"<string.*?>(.*?)</string>", stripline, re.DOTALL)
 
-			# Regular line. Just write it to the output file
-			else:
-				writeStream.write(line)
-				continue
+				# Item
+				elif stripline.startswith("<item"):
+					match = re.findall(r"<item.*?>(.*?)</item>", stripline, re.DOTALL)
 
-			# Make sure a match was found
-			if not match:
-				continue
+				# Regular line. Just write it to the output file
+				else:
+					writeStream.write(line)
+					continue
 
-			# Check if the match has a reference to another tag
-			if match[0].startswith("@"):
-				writeStream.write(line)
-				continue
+				# Make sure a match was found
+				if not match:
+					continue
 
-			# Log the match
-			print(repr(match[0]))
+				# Check if the match has a reference to another tag
+				if match[0].startswith("@"):
+					writeStream.write(line)
+					continue
 
-			# Translate the line
-			translation = translate_text(match[0], language_code=LANGUAGE)
+				# Log the match
+				print(repr(match[0]))
 
-			# Log the translation
-			print(repr(translation))
-			print("")
+				# Translate the line
+				translation = translate_text(match[0], language_code=LANGUAGE)
 
-			# Write the translation to the file
-			writeStream.write(line.replace(f">{match[0]}<", f">{translation}<"))
+				# Log the translation
+				print(repr(translation))
+				print("")
 
+				# Write the translation to the file
+				writeStream.write(line.replace(f">{match[0]}<", f">{translation}<"))
+
+# Translate text
+elif TEXT:
+
+	# Log the text
+	print(repr(TEXT))
+
+	# Translate the line
+	translation = translate_text(TEXT, language_code=LANGUAGE)
+
+	# Log the translation
+	print(repr(translation))
+	print("")
 
