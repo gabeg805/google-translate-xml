@@ -28,7 +28,7 @@ Use Google's Translation API to translate an XML file.
    ```
    python3 -m venv <YOUR-ENV>
    source <YOUR-ENV>/bin/activate
-   pip install google-cloud-translate
+   pipx install google-cloud-translate
    ```
 
    Where **\<YOUR-ENV\>** is a name of your choosing.
@@ -40,6 +40,10 @@ Use Google's Translation API to translate an XML file.
 8. Create local authentication credentials for your user account:
 
    `gcloud auth application-default login`
+
+9. Activate the **google-cloud-translate** virtual environment.
+
+   `. ~/.local/share/pipx/venvs/google-cloud-translate/bin/activate`
 
 9. Try to run this script.
 
