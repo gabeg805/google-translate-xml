@@ -40,11 +40,14 @@ parser.add_argument("-p", "--project", help="The Google Cloud Project ID")
 # Parse the arguments
 args = parser.parse_args()
 
+# Split xml file
+xmlName, xmlExt = os.path.splitext(args.file)
+
 # Define globals
 XML_FILE = args.file
 TEXT = args.text
 LANGUAGE = args.language
-OUTPUT_FILE = args.output if args.output else f"{XML_FILE}-{LANGUAGE}"
+OUTPUT_FILE = args.output if args.output else f"{xmlName}-{LANGUAGE}{xmlExt}"
 PROJECT_ID = args.project if args.project else os.environ.get("GOOGLE_CLOUD_PROJECT")
 
 # Check if file exists
