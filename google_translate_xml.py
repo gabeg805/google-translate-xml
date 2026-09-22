@@ -40,15 +40,16 @@ parser.add_argument("-p", "--project", help="The Google Cloud Project ID")
 # Parse the arguments
 args = parser.parse_args()
 
-# Split xml file
-xmlName, xmlExt = os.path.splitext(args.file)
-
 # Define globals
 XML_FILE = args.file
 TEXT = args.text
 LANGUAGE = args.language
-OUTPUT_FILE = args.output if args.output else f"{xmlName}-{LANGUAGE}{xmlExt}"
+OUTPUT_FILE = args.output
 PROJECT_ID = args.project if args.project else os.environ.get("GOOGLE_CLOUD_PROJECT")
+
+if not OUTPUT_FILE and XML_FILE:
+	xmlName, xmlExt = os.path.splitext(args.file)
+	OUTPUT_FILE = f"{xmlName}-{LANGUAGE}{xmlExt}"
 
 # Check if file exists
 if XML_FILE is not None and not os.path.isfile(XML_FILE):
@@ -116,8 +117,9 @@ if XML_FILE:
 			# Iterate over each line in the file
 			for i,line in enumerate(readStream):
 
-				# Strip whitespace from line
+				# Strip whitespace from line and set less than symbol flag
 				stripline = line.strip()
+				hasLtFlag = False
 
 				# String
 				if stripline.startswith("<string "):
@@ -125,6 +127,9 @@ if XML_FILE:
 
 				# Item
 				elif stripline.startswith("<item"):
+					if "&lt;" in stripline:
+						stripline = stripline.replace("&lt;", "<")
+						hasLtFlag = True
 					match = re.findall(r"<item.*?>(.*?)</item>", stripline, re.DOTALL)
 
 				# Regular line. Just write it to the output file
@@ -152,7 +157,13 @@ if XML_FILE:
 				print("")
 
 				# Write the translation to the file
-				writeStream.write(line.replace(f">{match[0]}<", f">{translation}<"))
+				if hasLtFlag:
+					m = match[0].replace("<b", "&lt;b").replace("</b", "&lt;/b")
+					t = translation.replace("<b", "&lt;b").replace("</b", "&lt;/b")
+
+					writeStream.write(line.replace(f">{m}<", f">{t}<"))
+				else:
+					writeStream.write(line.replace(f">{match[0]}<", f">{translation}<"))
 
 # Translate text
 elif TEXT:
