@@ -123,6 +123,9 @@ if XML_FILE:
 
 				# String
 				if stripline.startswith("<string "):
+					if "&lt;" in stripline:
+						stripline = stripline.replace("&lt;", "<")
+						hasLtFlag = True
 					match = re.findall(r"<string.*?>(.*?)</string>", stripline, re.DOTALL)
 
 				# Item
@@ -154,16 +157,31 @@ if XML_FILE:
 
 				# Log the translation
 				print(repr(translation))
+
+				# Cleanup translation
+				cleanMatch = match[0]
+				cleanTranslation = translation
+				escapeStrings = { \
+					"<b":  "&lt;b",
+					"</b": "&lt;/b",
+					"'":   "\\'"}
+
+				# Revert the &lt; to < conversion back to what it was originally. Skip the single quote as
+				# that was not changed
+				if hasLtFlag:
+					for k,v in list(escapeStrings.items())[:-1]:
+						cleanMatch = cleanMatch.replace(k, v)
+
+				# Clean up the translation, just in case
+				for k,v in escapeStrings.items():
+					cleanTranslation = cleanTranslation.replace(k, v)
+
+				# Log the clean translation
+				print(repr(cleanTranslation))
 				print("")
 
 				# Write the translation to the file
-				if hasLtFlag:
-					m = match[0].replace("<b", "&lt;b").replace("</b", "&lt;/b")
-					t = translation.replace("<b", "&lt;b").replace("</b", "&lt;/b")
-
-					writeStream.write(line.replace(f">{m}<", f">{t}<"))
-				else:
-					writeStream.write(line.replace(f">{match[0]}<", f">{translation}<"))
+				writeStream.write(line.replace(f">{cleanMatch}<", f">{cleanTranslation}<"))
 
 # Translate text
 elif TEXT:
