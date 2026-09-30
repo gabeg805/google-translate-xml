@@ -17,6 +17,8 @@ then
 	echo ":: Android language defaulting to '${lang}'"
 	androidLang="${lang}"
 	shift
+	shift
+
 # Shift parameters so that starting parameter(s) are the line numbers
 else
 	shift
@@ -49,8 +51,9 @@ then
 
 # Number of lines translated do not match the number that will be inserted into the android
 # file (via the script arguments)
-elif [ $(wc -l "${translationFile}") -ne $# ]
-	echo "Error: Number of lines in the translation file ($(wc -l "${translationFile}")) do not match the number of line numbers passed to this script ($#)"
+elif [ $(wc -l "${translationFile}" | cut -f 1 -d ' ') -ne $# ]
+then
+	echo "Error: Number of lines in the translation file ($(wc -l "${translationFile}" | cut -f 1 -d ' ')) do not match the number of line numbers passed to this script ($#)"
 	exit 3
 fi
 
@@ -63,21 +66,29 @@ echo ":: Backing up file that will be modified"
 cp -avf "${androidFile}" /tmp
 
 # Read the translation file, line by line
+args=("$@")
 i=0
-while read -r line
+while IFS= read -r line
 do
 
 	# Get line at line number
 	#line=$(sed "${n}!d" ${translationFile})
 
 	# Get line number to change
-	num=${@[$i]}
+	num=${args[$i]}
+	i=$[ $i + 1 ]
 
 	# Escape special characters in line
 	escapedLine=$(printf "%s\n" "$line" | sed -e 's/\&/\\\&/g' -e 's/\;/\\\;/g' -e "s/'/\\\'/g")
+	#echo -e "$line"
+	#echo -e "$escapedLine"
+	#echo
 
 	# Insert line into android file at line number
-	sed -i "${num}i $escapedLine" "${androidFile}"
+	# Note: This command looks weird but is needed so that \t tab characters are interpretted
+	#       correctly
+	sed -i $"${num}i\\
+$escapedLine" "${androidFile}"
 
 done < "${translationFile}"
 
